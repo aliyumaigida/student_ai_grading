@@ -14,13 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# project/urls.py
 
-# project/urls.py
-# project/urls.py
 from django.urls import path, include
-from api.views import home
 
 urlpatterns = [
-    path("", home, name="home"),  # 👈 THIS FIXES YOUR ERROR
-    path("api/", include("api.urls")),
+    path("", include("api.urls")),  # 🔥 MAIN FIX
 ]
