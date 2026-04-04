@@ -17,9 +17,16 @@ def parse_score(text):
     return 0
 
 
-def clean_feedback(text):
-    if not text:
+import re
+
+def clean_feedback(response):
+    if not response:
         return ""
 
-    text = re.sub(r"Score:.*\n?", "", text)
-    return text.strip()
+    # 🔥 Extract ONLY text after "Feedback:"
+    match = re.search(r"Feedback:\s*(.*)", response, re.IGNORECASE | re.DOTALL)
+
+    if match:
+        return match.group(1).strip()
+
+    return ""

@@ -65,40 +65,89 @@ document.getElementById("form").addEventListener("submit", async function(e) {
 
     let formData = new FormData(this);
 
-    let res = await fetch("/grade/", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": getCSRFToken()
-        },
-        body: formData
-    });
+    try {
+        let res = await fetch("/grade/", {
+            method: "POST",
+            headers: { "X-CSRFToken": getCSRFToken() },
+            body: formData
+        });
 
-    let data = await res.json();
+        // Always parse as JSON safely
+        let data;
+        try {
+            data = await res.json();
+        } catch (jsonErr) {
+            throw new Error(`Invalid JSON response`);
+        }
 
-    loading.classList.add("d-none");
+        if (!res.ok) {
+            throw new Error(data.error || `HTTP ${res.status}`);
+        }
 
-    // Total score
-    let html = `<div class="alert alert-success text-center">
-                  <h4>Total Score: ${data.total_score} / ${data.total_max}</h4>
-                </div>`;
+        // Hide loader
+        loading.classList.add("d-none");
 
-    // Per question
-    data.results.forEach(q => {
-        let color = "secondary";
-        if (q.score === q.max_marks) color = "success";
-        else if (q.score > q.max_marks / 2) color = "warning";
-        else color = "danger";
+        // Total score
+        let html = `<div class="alert alert-success text-center">
+                      <h4>Total Score: ${data.total_score} / ${data.total_max}</h4>
+                    </div>`;
 
-        html += `<div class="card mb-3 border-${color}">
-                   <div class="card-body">
-                     <h5>Question ${q.question_number}</h5>
-                     <p><strong>Score:</strong> <span class="badge bg-${color}">${q.score} / ${q.max_marks}</span></p>
-                     <p><strong>Feedback:</strong> ${q.feedback}</p>
-                   </div>
-                 </div>`;
-    });
+        // Iterate over results
+        if (data.results && Array.isArray(data.results)) {
+            data.results.forEach(q => {
+                // Fallback in case some keys are missing
+                let score = q.score ?? 0;
+                let max_marks = q.max_marks ?? 1;
+                let question = q.question ?? "";
+                let student_answer = q.student_answer ?? "";
+                let feedback = q.feedback ?? "";
+                let question_number = q.question_number ?? "";
 
-    resultDiv.innerHTML = html;
+                let color = "secondary";
+                if (score === max_marks) color = "success";
+                else if (score > max_marks / 2) color = "warning";
+                else color = "danger";
+
+                html += `<div class="card mb-3 shadow-sm border-${color}">
+                          <div class="card-body">
+
+                            <!-- ✅ SCORE FIRST -->
+                            <h5 class="mb-3">
+                              <span class="badge bg-${color} fs-6">
+                                Score: ${score} / ${max_marks}
+                              </span>
+                            </h5>
+
+                            <!-- ✅ QUESTION -->
+                            <h6>
+                              ${question}
+                            </h6>
+
+                            <!-- ✅ STUDENT ANSWER -->
+                            <p class="mt-3">
+                              <strong>Student Answer:</strong><br>
+                              ${student_answer}
+                            </p>
+
+                            <!-- ✅ FEEDBACK -->
+                            <p class="mt-3">
+                              <strong>Feedback:</strong><br>
+                              ${feedback}
+                            </p>
+
+                          </div>
+                        </div>`;
+
+            });
+        }
+
+        resultDiv.innerHTML = html;
+
+    } catch (err) {
+        loading.classList.add("d-none");
+        resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+        console.error("Grading error:", err);
+    }
 });
 </script>
 
