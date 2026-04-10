@@ -17,10 +17,19 @@
     <form id="form" enctype="multipart/form-data">
       {% csrf_token %}
 
+      <div class="mb-5">
+        <a href="/history-page/" class="btn btn-primary">📜 View Student History</a>
+      </div>
       <!-- Student Name -->
       <div class="mb-3">
           <label class="form-label">Student Name</label>
           <input type="text" name="student_name" class="form-control" required>
+      </div>
+
+      <!-- Matric Number -->
+      <div class="mb-3">
+          <label class="form-label">Matric Number</label>
+          <input type="text" name="matric_no" class="form-control" required>
       </div>
 
       <!-- Marking File -->
@@ -34,6 +43,7 @@
         <label class="form-label">Student File</label>
         <input type="file" name="student_file" class="form-control" required>
       </div>
+
 
       <button class="btn btn-primary w-100">Grade Exam</button>
     </form>
@@ -150,6 +160,8 @@ document.getElementById("form").addEventListener("submit", async function(e) {
     }
 });
 </script>
+
+
 
 </body>
 </html>
